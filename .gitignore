@@ -1,0 +1,30 @@
+# Generic GoLang Git ignore file
+# Binaries
+bin/
+dist/
+*.exe
+*.out
+
+# Go build artifacts
+*.test
+*.prof
+coverage.out
+
+# Vendor
+vendor/
+
+# IDE / editor
+.vscode/
+.idea/
+*.swp
+*.swo
+
+# OS
+.DS_Store
+
+# Logs / runtime
+logs/
+*.log
+
+# Local env
+.env
