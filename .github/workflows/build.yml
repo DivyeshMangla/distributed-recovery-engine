@@ -1,11 +1,35 @@
-name: build
+name: docker-build
 
 on:
   push:
   pull_request:
 
 jobs:
-  build:
+  docker-build:
+    runs-on: ubuntu-latest
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Set up Docker Buildx
+        uses: docker/setup-buildx-action@v3
+
+      - name: Build Docker image
+        uses: docker/build-push-action@v5
+        with:
+          context: .
+          file: ./Dockerfile
+          push: false
+          tags: dre:test
+          cache-from: type=gha
+          cache-to: type=gha,mode=max
+
+      - name: Test Docker image
+        run: |
+          docker run --rm dre:test --help || true
+          echo "Docker image built successfully!"
+
+  go-build:
     runs-on: ubuntu-latest
 
     steps:

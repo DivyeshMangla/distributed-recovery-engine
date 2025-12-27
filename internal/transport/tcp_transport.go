@@ -35,18 +35,6 @@ func (t *TCPTransport) acceptLoop() {
 			return
 		}
 
-		go func(c net.Conn) {
-			defer closeQuietly(c)
-
-			buf := make([]byte, 1024)
-			n, err := c.Read(buf)
-			if err != nil {
-				return
-			}
-
-			t.in <- buf[:n]
-		}(conn)
-
 		go t.handleConnection(conn)
 	}
 }
@@ -60,7 +48,7 @@ func (t *TCPTransport) handleConnection(conn net.Conn) {
 		return
 	}
 
-	_ = buf[:n]
+	t.in <- buf[:n]
 }
 
 func (t *TCPTransport) Dial(addr string, msg []byte) error {

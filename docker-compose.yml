@@ -1,0 +1,61 @@
+services:
+  node-1:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    image: dre:latest
+    container_name: node-1
+    command:
+      - --id=node-1
+      - --addr=0.0.0.0:8000
+    networks:
+      - dre-net
+
+  node-2:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    image: dre:latest
+    container_name: node-2
+    command:
+      - --id=node-2
+      - --addr=0.0.0.0:8000
+      - --seed=node-1:8000
+    depends_on:
+      - node-1
+    networks:
+      - dre-net
+
+  node-3:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    image: dre:latest
+    container_name: node-3
+    command:
+      - --id=node-3
+      - --addr=0.0.0.0:8000
+      - --seed=node-1:8000
+    depends_on:
+      - node-1
+    networks:
+      - dre-net
+
+  node-4:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    image: dre:latest
+    container_name: node-4
+    command:
+      - --id=node-4
+      - --addr=0.0.0.0:8000
+      - --seed=node-1:8000
+    depends_on:
+      - node-1
+    networks:
+      - dre-net
+
+networks:
+  dre-net:
+    driver: bridge

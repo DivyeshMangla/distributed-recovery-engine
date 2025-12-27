@@ -17,9 +17,10 @@ type Node struct {
 
 func NewNode(id, addr, seed string) *Node {
 	return &Node{
-		ID:   id,
-		Addr: addr,
-		Seed: seed,
+		ID:         id,
+		Addr:       addr,
+		Seed:       seed,
+		Membership: *NewMembership(),
 	}
 }
 
