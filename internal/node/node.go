@@ -54,6 +54,13 @@ func (n *Node) handleIncoming(ch <-chan []byte) {
 		}
 
 		n.Membership.Upsert(h.ID, h.Addr)
+
+		fmt.Printf(
+			"received hello from %s (%s), members=%d\n",
+			h.ID,
+			h.Addr,
+			len(n.Membership.Snapshot()),
+		)
 	}
 }
 

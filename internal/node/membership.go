@@ -34,3 +34,14 @@ func (m *Membership) Upsert(id, addr string) {
 		LastSeen: time.Now(),
 	}
 }
+
+func (m *Membership) Snapshot() []Member {
+	m.mu.Lock()
+	defer m.mu.Unlock()
+
+	out := make([]Member, 0, len(m.members))
+	for _, member := range m.members {
+		out = append(out, *member)
+	}
+	return out
+}
