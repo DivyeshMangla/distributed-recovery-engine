@@ -3,6 +3,7 @@ package node
 import (
 	"encoding/json"
 	"fmt"
+	"github.com/divyeshmangla/distributed-recovery-engine/internal/node/membership"
 	"github.com/divyeshmangla/distributed-recovery-engine/internal/protocol"
 	"github.com/divyeshmangla/distributed-recovery-engine/internal/transport"
 )
@@ -12,7 +13,7 @@ type Node struct {
 	Addr       string
 	Seed       string
 	Transport  transport.Transport
-	Membership Membership
+	Membership membership.Membership
 }
 
 func NewNode(id, addr, seed string) *Node {
@@ -20,7 +21,7 @@ func NewNode(id, addr, seed string) *Node {
 		ID:         id,
 		Addr:       addr,
 		Seed:       seed,
-		Membership: *NewMembership(),
+		Membership: *membership.NewMembership(),
 	}
 }
 

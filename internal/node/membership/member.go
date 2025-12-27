@@ -1,6 +1,8 @@
-package node
+package membership
 
-import "time"
+import (
+	"time"
+)
 
 type Member struct {
 	ID       string
