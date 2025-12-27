@@ -6,10 +6,11 @@ import (
 )
 
 type Node struct {
-	ID        string
-	Addr      string
-	Seed      string
-	Transport transport.Transport
+	ID         string
+	Addr       string
+	Seed       string
+	Transport  transport.Transport
+	Membership Membership
 }
 
 func NewNode(id, addr, seed string) *Node {
