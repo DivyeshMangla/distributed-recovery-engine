@@ -16,5 +16,5 @@ func main() {
 	seed := flag.String("seed", "", "seed node address")
 
 	flag.Parse()
-	node.NewNode(*id, *addr, *seed).Start()
+	_ = node.NewNode(*id, *addr, *seed).Start()
 }
