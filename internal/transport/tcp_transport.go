@@ -1,41 +1,51 @@
 package transport
 
 import (
-	"errors"
 	"net"
 )
 
 type TCPTransport struct {
 	ln net.Listener
+	in chan []byte
 }
 
 func NewTCPTransport() *TCPTransport {
-	return &TCPTransport{}
+	return &TCPTransport{
+		in: make(chan []byte),
+	}
 }
 
-func (t *TCPTransport) Listen(addr string) error {
+func (t *TCPTransport) Listen(addr string) (<-chan []byte, error) {
 	ln, err := net.Listen("tcp", addr)
 	if err != nil {
-		return err
+		return nil, err
 	}
 
 	t.ln = ln
 
 	go t.acceptLoop()
 
-	return nil
+	return t.in, nil
 }
 
 func (t *TCPTransport) acceptLoop() {
 	for {
 		conn, err := t.ln.Accept()
 		if err != nil {
-			var ne net.Error
-			if errors.As(err, &ne) && ne.Temporary() {
-				continue
-			}
 			return
 		}
+
+		go func(c net.Conn) {
+			defer closeQuietly(c)
+
+			buf := make([]byte, 1024)
+			n, err := c.Read(buf)
+			if err != nil {
+				return
+			}
+
+			t.in <- buf[:n]
+		}(conn)
 
 		go t.handleConnection(conn)
 	}
@@ -43,10 +53,17 @@ func (t *TCPTransport) acceptLoop() {
 
 func (t *TCPTransport) handleConnection(conn net.Conn) {
 	defer closeQuietly(conn)
-	// for future
+
+	buf := make([]byte, 1024)
+	n, err := conn.Read(buf)
+	if err != nil {
+		return
+	}
+
+	_ = buf[:n]
 }
 
-func (t *TCPTransport) Dial(addr string) error {
+func (t *TCPTransport) Dial(addr string, msg []byte) error {
 	conn, err := net.Dial("tcp", addr)
 	if err != nil {
 		return err
@@ -54,7 +71,9 @@ func (t *TCPTransport) Dial(addr string) error {
 
 	defer closeQuietly(conn)
 
-	return nil
+	_, err = conn.Write(msg)
+
+	return err
 }
 
 func (t *TCPTransport) Close() error {
@@ -62,6 +81,7 @@ func (t *TCPTransport) Close() error {
 		return t.ln.Close()
 	}
 
+	close(t.in)
 	return nil
 }
 
