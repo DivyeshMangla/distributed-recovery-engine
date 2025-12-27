@@ -1,6 +1,7 @@
 package membership
 
 import (
+	"math/rand"
 	"sync"
 	"time"
 )
@@ -44,4 +45,42 @@ func (m *Membership) Snapshot() []Member {
 		out = append(out, *member)
 	}
 	return out
+}
+
+func (m *Membership) PickRandomPeer(selfID string) *Member {
+	m.mu.Lock()
+	defer m.mu.Unlock()
+
+	if len(m.members) <= 1 {
+		return nil
+	}
+
+	peers := make([]*Member, 0, len(m.members))
+
+	for id, member := range m.members {
+
+		if id == selfID {
+			continue
+		}
+
+		if member.Status != Alive {
+			continue
+		}
+
+		peers = append(peers, member)
+	}
+
+	if len(peers) == 0 {
+		return nil
+	}
+
+	return peers[rand.Intn(len(peers))]
+}
+
+func (m *Membership) Exists(id string) bool {
+	m.mu.Lock()
+	defer m.mu.Unlock()
+
+	_, exists := m.members[id]
+	return exists
 }

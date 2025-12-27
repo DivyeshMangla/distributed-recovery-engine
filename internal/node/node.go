@@ -36,6 +36,8 @@ func (n *Node) Start() error {
 
 	go n.handleIncoming(ch)
 
+	go n.startGossip()
+
 	if n.Seed != "" {
 		n.sendHello()
 	}
@@ -50,19 +52,13 @@ func (n *Node) Start() error {
 
 func (n *Node) handleIncoming(ch <-chan []byte) {
 	for data := range ch {
-		var h protocol.Hello
-		if err := json.Unmarshal(data, &h); err != nil {
+		if n.handleHello(data) {
 			continue
 		}
 
-		n.Membership.Upsert(h.ID, h.Addr)
-
-		fmt.Printf(
-			"received hello from %s (%s), members=%d\n",
-			h.ID,
-			h.Addr,
-			len(n.Membership.Snapshot()),
-		)
+		if n.handleGossip(data) {
+			continue
+		}
 	}
 }
 

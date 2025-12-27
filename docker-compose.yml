@@ -1,25 +1,21 @@
 services:
   node-1:
-    build:
-      context: .
-      dockerfile: Dockerfile
+    build: .
     image: dre:latest
     container_name: node-1
     command:
       - --id=node-1
-      - --addr=0.0.0.0:8000
+      - --addr=node-1:8000
     networks:
       - dre-net
 
   node-2:
-    build:
-      context: .
-      dockerfile: Dockerfile
+    build: .
     image: dre:latest
     container_name: node-2
     command:
       - --id=node-2
-      - --addr=0.0.0.0:8000
+      - --addr=node-2:8000
       - --seed=node-1:8000
     depends_on:
       - node-1
@@ -27,14 +23,12 @@ services:
       - dre-net
 
   node-3:
-    build:
-      context: .
-      dockerfile: Dockerfile
+    build: .
     image: dre:latest
     container_name: node-3
     command:
       - --id=node-3
-      - --addr=0.0.0.0:8000
+      - --addr=node-3:8000
       - --seed=node-1:8000
     depends_on:
       - node-1
@@ -42,14 +36,12 @@ services:
       - dre-net
 
   node-4:
-    build:
-      context: .
-      dockerfile: Dockerfile
+    build: .
     image: dre:latest
     container_name: node-4
     command:
       - --id=node-4
-      - --addr=0.0.0.0:8000
+      - --addr=node-4:8000
       - --seed=node-1:8000
     depends_on:
       - node-1
