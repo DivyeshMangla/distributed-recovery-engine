@@ -2,6 +2,8 @@ package protocol
 
 import "time"
 
+const GossipPrefix byte = 'G'
+
 type Gossip struct {
 	Members []GossipMember `json:"members"`
 }

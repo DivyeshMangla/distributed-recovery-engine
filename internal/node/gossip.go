@@ -34,12 +34,12 @@ func (n *Node) gossipToPeer() {
 		return
 	}
 
-	_ = n.Transport.Dial(peer.Addr, payload)
-	slog.Debug("sent gossip", "to", peer.ID, "payloadSize", len(payload))
+	msg := append([]byte{protocol.GossipPrefix}, payload...)
+	_ = n.Transport.Dial(peer.Addr, msg)
+	slog.Debug("sent gossip", "to", peer.ID, "payloadSize", len(msg))
 }
 
 func (n *Node) buildGossipPayload() ([]byte, error) {
-	// Hybrid delta gossip: self + recently changed + random sample, max 5
 	targets := n.Membership.SelectGossipTargets(n.ID, gossipMaxMembers, gossipRecentWindow)
 
 	members := make([]protocol.GossipMember, 0, len(targets))

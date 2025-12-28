@@ -10,7 +10,7 @@ import (
 
 const (
 	udpBufferSize     = 65507
-	udpIncomingBuffer = 1000
+	udpIncomingBuffer = 100
 )
 
 type UDPTransport struct {

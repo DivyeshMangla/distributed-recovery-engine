@@ -72,20 +72,19 @@ func (n *Node) Start() error {
 
 func (n *Node) handleIncoming(ch <-chan []byte) {
 	for data := range ch {
-		if n.handleHello(data) {
+		if len(data) < 2 {
 			continue
 		}
 
-		if n.handleGossip(data) {
-			continue
-		}
-
-		if n.handleHeartbeat(data) {
-			continue
-		}
-
-		if n.handleHeartbeatAck(data) {
-			continue
+		switch data[0] {
+		case protocol.HelloPrefix:
+			n.handleHello(data[1:])
+		case protocol.GossipPrefix:
+			n.handleGossip(data[1:])
+		case protocol.HeartbeatPrefix:
+			n.handleHeartbeat(data[1:])
+		case protocol.HeartbeatAckPrefix:
+			n.handleHeartbeatAck(data[1:])
 		}
 	}
 }
@@ -99,5 +98,6 @@ func (n *Node) sendHello() {
 		return
 	}
 
-	_ = n.Transport.Dial(n.Seed, payload)
+	msg := append([]byte{protocol.HelloPrefix}, payload...)
+	_ = n.Transport.Dial(n.Seed, msg)
 }

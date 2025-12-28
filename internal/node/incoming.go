@@ -43,7 +43,8 @@ func (n *Node) replyHello(addr protocol.Address) {
 		return
 	}
 
-	_ = n.Transport.Dial(addr, payload)
+	msg := append([]byte{protocol.HelloPrefix}, payload...)
+	_ = n.Transport.Dial(addr, msg)
 }
 
 func (n *Node) handleGossip(data []byte) bool {
@@ -79,8 +80,10 @@ func (n *Node) replyHeartbeat(addr protocol.Address) {
 	}
 
 	payload, _ := json.Marshal(ack)
+	msg := append([]byte{protocol.HeartbeatAckPrefix}, payload...)
+
 	if addr != "" {
-		_ = n.Transport.Dial(addr, payload)
+		_ = n.Transport.Dial(addr, msg)
 	}
 }
 

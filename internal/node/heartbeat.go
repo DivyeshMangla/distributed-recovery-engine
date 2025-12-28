@@ -35,8 +35,9 @@ func (n *Node) sendHeartbeat() {
 		return
 	}
 
-	_ = n.Transport.Dial(peer.Addr, payload)
+	msg := append([]byte{protocol.HeartbeatPrefix}, payload...)
+	_ = n.Transport.Dial(peer.Addr, msg)
 
-	n.Membership.MarkAlive(n.ID) // don't sus yourself out
+	n.Membership.MarkAlive(n.ID)
 	slog.Debug("sent heartbeat", "to", peer.ID)
 }
