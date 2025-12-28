@@ -38,6 +38,8 @@ func (n *Node) Start() error {
 
 	go n.startGossip()
 
+	go n.startHeartbeat()
+
 	if n.Seed != protocol.Address("") {
 		n.sendHello()
 	}
@@ -57,6 +59,10 @@ func (n *Node) handleIncoming(ch <-chan []byte) {
 		}
 
 		if n.handleGossip(data) {
+			continue
+		}
+
+		if n.handleHeartbeat(data) {
 			continue
 		}
 	}

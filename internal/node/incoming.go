@@ -58,3 +58,14 @@ func (n *Node) handleGossip(data []byte) bool {
 
 	return true
 }
+
+func (n *Node) handleHeartbeat(data []byte) bool {
+	var hb protocol.Heartbeat
+	if err := json.Unmarshal(data, &hb); err != nil || hb.From == "" {
+		return false
+	}
+
+	n.Membership.Upsert(hb.From, n.Membership.GetAddr(hb.From))
+
+	return true
+}

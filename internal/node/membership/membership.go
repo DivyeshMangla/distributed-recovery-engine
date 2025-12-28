@@ -86,3 +86,13 @@ func (m *Membership) Exists(id protocol.NodeID) bool {
 	_, exists := m.members[id]
 	return exists
 }
+
+func (m *Membership) GetAddr(id protocol.NodeID) protocol.Address {
+	m.mu.Lock()
+	defer m.mu.Unlock()
+
+	if member, ok := m.members[id]; ok {
+		return member.Addr
+	}
+	return ""
+}
