@@ -31,7 +31,7 @@ func NewNode(id, addr, seed string) *Node {
 }
 
 func (n *Node) Start() error {
-	t := transport.NewTCPTransport()
+	t := transport.NewUDPTransport()
 	n.Transport = t
 
 	ch, err := t.Listen(n.Addr)

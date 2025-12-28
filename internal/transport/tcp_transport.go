@@ -8,7 +8,7 @@ import (
 	"github.com/divyeshmangla/distributed-recovery-engine/internal/protocol"
 )
 
-const incomingBufferSize = 100
+const incomingBufferSize = 10000
 
 type TCPTransport struct {
 	ln net.Listener
