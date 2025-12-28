@@ -8,6 +8,8 @@ import (
 	"github.com/divyeshmangla/distributed-recovery-engine/internal/protocol"
 )
 
+const incomingBufferSize = 100
+
 type TCPTransport struct {
 	ln net.Listener
 	in chan []byte
@@ -15,7 +17,7 @@ type TCPTransport struct {
 
 func NewTCPTransport() *TCPTransport {
 	return &TCPTransport{
-		in: make(chan []byte, 100), // Buffered to prevent blocking on slow handlers
+		in: make(chan []byte, incomingBufferSize),
 	}
 }
 

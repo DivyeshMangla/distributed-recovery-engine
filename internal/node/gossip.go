@@ -9,8 +9,8 @@ import (
 )
 
 const (
-	gossipInterval     = 2 * time.Second
-	gossipMaxMembers   = 5
+	gossipInterval     = 1 * time.Second
+	gossipMaxMembers   = 8
 	gossipRecentWindow = 30 * time.Second
 )
 

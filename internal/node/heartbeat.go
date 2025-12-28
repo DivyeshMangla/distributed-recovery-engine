@@ -8,8 +8,10 @@ import (
 	"github.com/divyeshmangla/distributed-recovery-engine/internal/protocol"
 )
 
+const heartbeatInterval = 1 * time.Second
+
 func (n *Node) startHeartbeat() {
-	ticker := time.NewTicker(1 * time.Second)
+	ticker := time.NewTicker(heartbeatInterval)
 	defer ticker.Stop()
 
 	for range ticker.C {
