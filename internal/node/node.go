@@ -43,7 +43,7 @@ func (n *Node) Start() error {
 		n.sendHello()
 	}
 
-	n.Membership.Upsert(n.ID, n.Addr) // need to register self
+	n.Membership.Upsert(n.ID, n.Addr, membership.Alive) // need to register self
 
 	fmt.Printf(
 		"node id: %s, listen address: %s, seed node address: %s\n",

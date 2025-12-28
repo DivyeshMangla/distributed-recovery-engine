@@ -1,5 +1,11 @@
 package protocol
 
 type Gossip struct {
-	Members []Hello `json:"members"`
+	Members []GossipMember `json:"members"`
+}
+
+type GossipMember struct {
+	ID     NodeID  `json:"id"`
+	Addr   Address `json:"addr"`
+	Status int     `json:"status"`
 }

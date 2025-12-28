@@ -8,5 +8,6 @@ func (n *Node) startFailureMonitor() {
 
 	for range ticker.C {
 		n.Membership.MarkSuspect(10 * time.Second)
+		n.Membership.MarkDead(30 * time.Second)
 	}
 }

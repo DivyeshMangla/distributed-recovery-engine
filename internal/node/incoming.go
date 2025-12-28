@@ -3,6 +3,7 @@ package node
 import (
 	"encoding/json"
 	"fmt"
+	"github.com/divyeshmangla/distributed-recovery-engine/internal/node/membership"
 	"time"
 
 	"github.com/divyeshmangla/distributed-recovery-engine/internal/protocol"
@@ -15,7 +16,7 @@ func (n *Node) handleHello(data []byte) bool {
 	}
 
 	isNew := !n.Membership.Exists(h.ID)
-	n.Membership.Upsert(h.ID, h.Addr)
+	n.Membership.Upsert(h.ID, h.Addr, membership.Alive)
 
 	fmt.Printf("received hello from %s (%s), members=%d\n", h.ID, h.Addr, len(n.Membership.Snapshot()))
 
@@ -48,7 +49,7 @@ func (n *Node) handleGossip(data []byte) bool {
 	oldSize := len(n.Membership.Snapshot())
 
 	for _, member := range g.Members {
-		n.Membership.Upsert(member.ID, member.Addr)
+		n.Membership.Upsert(member.ID, member.Addr, membership.Status(member.Status))
 	}
 
 	newSize := len(n.Membership.Snapshot())

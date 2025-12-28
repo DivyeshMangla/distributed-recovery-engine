@@ -19,21 +19,30 @@ func NewMembership() *Membership {
 	}
 }
 
-func (m *Membership) Upsert(id protocol.NodeID, addr protocol.Address) {
+func (m *Membership) Upsert(id protocol.NodeID, addr protocol.Address, status Status) {
 	m.mu.Lock()
 	defer m.mu.Unlock()
 
 	if member, ok := m.members[id]; ok {
 		member.Addr = addr
-		member.Status = Alive
-		member.LastSeen = time.Now()
+
+		// Direct communication (Alive) always wins
+		if status == Alive {
+			member.Status = Alive
+			member.LastSeen = time.Now()
+		} else {
+			// Gossip: only update if status is worse
+			if status > member.Status {
+				member.Status = status
+			}
+		}
 		return
 	}
 
 	m.members[id] = &Member{
 		ID:       id,
 		Addr:     addr,
-		Status:   Alive,
+		Status:   status,
 		LastSeen: time.Now(),
 	}
 }

@@ -33,11 +33,12 @@ func (n *Node) gossipToPeer() {
 func (n *Node) buildGossipPayload() ([]byte, error) {
 	snapshot := n.Membership.Snapshot()
 
-	members := make([]protocol.Hello, 0, len(snapshot))
+	members := make([]protocol.GossipMember, 0, len(snapshot))
 	for _, m := range snapshot {
-		members = append(members, protocol.Hello{
-			ID:   m.ID,
-			Addr: m.Addr,
+		members = append(members, protocol.GossipMember{
+			ID:     m.ID,
+			Addr:   m.Addr,
+			Status: int(m.Status),
 		})
 	}
 

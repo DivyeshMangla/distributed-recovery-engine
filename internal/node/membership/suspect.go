@@ -28,3 +28,27 @@ func (m *Membership) MarkSuspect(timeout time.Duration) {
 		}
 	}
 }
+
+func (m *Membership) MarkDead(deadTimeout time.Duration) {
+	m.mu.Lock()
+	defer m.mu.Unlock()
+
+	now := time.Now()
+
+	for _, member := range m.members {
+		if member.Status != Suspect {
+			continue
+		}
+
+		if now.Sub(member.LastSeen) > deadTimeout {
+			member.Status = Dead
+			fmt.Printf(
+				"[dead] node=%s addr=%s last_seen=%s silence=%s\n",
+				member.ID,
+				member.Addr,
+				member.LastSeen.Format(time.RFC3339),
+				now.Sub(member.LastSeen).Truncate(time.Millisecond),
+			)
+		}
+	}
+}
