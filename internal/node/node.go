@@ -6,6 +6,9 @@ import (
 	"github.com/divyeshmangla/distributed-recovery-engine/internal/node/membership"
 	"github.com/divyeshmangla/distributed-recovery-engine/internal/protocol"
 	"github.com/divyeshmangla/distributed-recovery-engine/internal/transport"
+	"os"
+	"os/signal"
+	"syscall"
 )
 
 type Node struct {
@@ -50,7 +53,13 @@ func (n *Node) Start() error {
 		n.ID, n.Addr, n.Seed,
 	)
 
-	select {} // block, TODO: think of something better, surely blocking isn't the best
+	stop := make(chan os.Signal, 1)
+	signal.Notify(stop, os.Interrupt, syscall.SIGTERM)
+	<-stop
+
+	fmt.Println("shutting down", n.ID)
+	_ = n.Transport.Close()
+	return nil
 }
 
 func (n *Node) handleIncoming(ch <-chan []byte) {

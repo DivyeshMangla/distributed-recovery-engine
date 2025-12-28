@@ -7,7 +7,7 @@ import (
 )
 
 func (n *Node) startHeartbeat() {
-	ticker := time.NewTicker(5 * time.Second)
+	ticker := time.NewTicker(1 * time.Second)
 	defer ticker.Stop()
 
 	for range ticker.C {
