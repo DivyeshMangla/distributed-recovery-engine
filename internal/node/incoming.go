@@ -9,7 +9,7 @@ import (
 
 func (n *Node) handleHello(data []byte) bool {
 	var h protocol.Hello
-	if err := json.Unmarshal(data, &h); err != nil || h.ID == protocol.NodeID("") {
+	if err := json.Unmarshal(data, &h); err != nil || h.ID == ("") {
 		return false
 	}
 

@@ -40,7 +40,7 @@ func (n *Node) Start() error {
 
 	go n.startHeartbeat()
 
-	if n.Seed != protocol.Address("") {
+	if n.Seed != ("") {
 		n.sendHello()
 	}
 
