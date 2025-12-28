@@ -1,6 +1,7 @@
 package membership
 
 import (
+	"fmt"
 	"math/rand"
 	"sync"
 	"time"
@@ -33,6 +34,7 @@ func (m *Membership) Upsert(id protocol.NodeID, addr protocol.Address, status St
 		} else {
 			// Gossip: only update if status is worse
 			if status > member.Status {
+				fmt.Printf("[gossip] updated node=%s from %d to %d\n", id, member.Status, status)
 				member.Status = status
 			}
 		}
