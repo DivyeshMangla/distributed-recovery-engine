@@ -6,47 +6,147 @@ services:
     command:
       - --id=node-1
       - --addr=node-1:8000
-    networks:
-      - dre-net
+    networks: [dre-net]
 
   node-2:
-    build: .
     image: dre:latest
     container_name: node-2
     command:
       - --id=node-2
       - --addr=node-2:8000
       - --seed=node-1:8000
-    depends_on:
-      - node-1
-    networks:
-      - dre-net
+    depends_on: [node-1]
+    networks: [dre-net]
 
   node-3:
-    build: .
     image: dre:latest
     container_name: node-3
     command:
       - --id=node-3
       - --addr=node-3:8000
       - --seed=node-1:8000
-    depends_on:
-      - node-1
-    networks:
-      - dre-net
+    depends_on: [node-1]
+    networks: [dre-net]
 
   node-4:
-    build: .
     image: dre:latest
     container_name: node-4
     command:
       - --id=node-4
       - --addr=node-4:8000
       - --seed=node-1:8000
-    depends_on:
-      - node-1
-    networks:
-      - dre-net
+    depends_on: [node-1]
+    networks: [dre-net]
+
+  node-5:
+    image: dre:latest
+    container_name: node-5
+    command:
+      - --id=node-5
+      - --addr=node-5:8000
+      - --seed=node-1:8000
+    depends_on: [node-1]
+    networks: [dre-net]
+
+  node-6:
+    image: dre:latest
+    container_name: node-6
+    command:
+      - --id=node-6
+      - --addr=node-6:8000
+      - --seed=node-1:8000
+    depends_on: [node-1]
+    networks: [dre-net]
+
+  node-7:
+    image: dre:latest
+    container_name: node-7
+    command:
+      - --id=node-7
+      - --addr=node-7:8000
+      - --seed=node-1:8000
+    depends_on: [node-1]
+    networks: [dre-net]
+
+  node-8:
+    image: dre:latest
+    container_name: node-8
+    command:
+      - --id=node-8
+      - --addr=node-8:8000
+      - --seed=node-1:8000
+    depends_on: [node-1]
+    networks: [dre-net]
+
+  node-9:
+    image: dre:latest
+    container_name: node-9
+    command:
+      - --id=node-9
+      - --addr=node-9:8000
+      - --seed=node-1:8000
+    depends_on: [node-1]
+    networks: [dre-net]
+
+  node-10:
+    image: dre:latest
+    container_name: node-10
+    command:
+      - --id=node-10
+      - --addr=node-10:8000
+      - --seed=node-1:8000
+    depends_on: [node-1]
+    networks: [dre-net]
+
+  node-11:
+    image: dre:latest
+    container_name: node-11
+    command:
+      - --id=node-11
+      - --addr=node-11:8000
+      - --seed=node-1:8000
+    depends_on: [node-1]
+    networks: [dre-net]
+
+  node-12:
+    image: dre:latest
+    container_name: node-12
+    command:
+      - --id=node-12
+      - --addr=node-12:8000
+      - --seed=node-1:8000
+    depends_on: [node-1]
+    networks: [dre-net]
+
+  node-13:
+    image: dre:latest
+    container_name: node-13
+    command:
+      - --id=node-13
+      - --addr=node-13:8000
+      - --seed=node-1:8000
+    depends_on: [node-1]
+    networks: [dre-net]
+
+  node-14:
+    image: dre:latest
+    container_name: node-14
+    command:
+      - --id=node-14
+      - --addr=node-14:8000
+      - --seed=node-1:8000
+    depends_on: [node-1]
+    networks: [dre-net]
+
+  node-15:
+    image: dre:latest
+    container_name: node-15
+    command:
+      - --id=node-15
+      - --addr=node-15:8000
+      - --seed=node-1:8000
+    depends_on: [node-1]
+    networks: [dre-net]
 
 networks:
   dre-net:
