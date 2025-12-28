@@ -2,6 +2,8 @@ package transport
 
 import (
 	"net"
+
+	"github.com/divyeshmangla/distributed-recovery-engine/internal/protocol"
 )
 
 type TCPTransport struct {
@@ -15,8 +17,8 @@ func NewTCPTransport() *TCPTransport {
 	}
 }
 
-func (t *TCPTransport) Listen(addr string) (<-chan []byte, error) {
-	ln, err := net.Listen("tcp", addr)
+func (t *TCPTransport) Listen(addr protocol.Address) (<-chan []byte, error) {
+	ln, err := net.Listen("tcp", string(addr))
 	if err != nil {
 		return nil, err
 	}
@@ -51,8 +53,8 @@ func (t *TCPTransport) handleConnection(conn net.Conn) {
 	t.in <- buf[:n]
 }
 
-func (t *TCPTransport) Dial(addr string, msg []byte) error {
-	conn, err := net.Dial("tcp", addr)
+func (t *TCPTransport) Dial(addr protocol.Address, msg []byte) error {
+	conn, err := net.Dial("tcp", string(addr))
 	if err != nil {
 		return err
 	}

@@ -4,20 +4,22 @@ import (
 	"math/rand"
 	"sync"
 	"time"
+
+	"github.com/divyeshmangla/distributed-recovery-engine/internal/protocol"
 )
 
 type Membership struct {
 	mu      sync.Mutex
-	members map[string]*Member // id -> member
+	members map[protocol.NodeID]*Member // id -> member
 }
 
 func NewMembership() *Membership {
 	return &Membership{
-		members: make(map[string]*Member),
+		members: make(map[protocol.NodeID]*Member),
 	}
 }
 
-func (m *Membership) Upsert(id, addr string) {
+func (m *Membership) Upsert(id protocol.NodeID, addr protocol.Address) {
 	m.mu.Lock()
 	defer m.mu.Unlock()
 
@@ -47,7 +49,7 @@ func (m *Membership) Snapshot() []Member {
 	return out
 }
 
-func (m *Membership) PickRandomPeer(selfID string) *Member {
+func (m *Membership) PickRandomPeer(selfID protocol.NodeID) *Member {
 	m.mu.Lock()
 	defer m.mu.Unlock()
 
@@ -77,7 +79,7 @@ func (m *Membership) PickRandomPeer(selfID string) *Member {
 	return peers[rand.Intn(len(peers))]
 }
 
-func (m *Membership) Exists(id string) bool {
+func (m *Membership) Exists(id protocol.NodeID) bool {
 	m.mu.Lock()
 	defer m.mu.Unlock()
 

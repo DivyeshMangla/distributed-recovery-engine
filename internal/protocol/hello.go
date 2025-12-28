@@ -1,6 +1,6 @@
 package protocol
 
 type Hello struct {
-	ID   string `json:"id"`
-	Addr string `json:"addr"`
+	ID   NodeID  `json:"id"`
+	Addr Address `json:"addr"`
 }

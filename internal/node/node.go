@@ -9,18 +9,18 @@ import (
 )
 
 type Node struct {
-	ID         string
-	Addr       string
-	Seed       string
+	ID         protocol.NodeID
+	Addr       protocol.Address
+	Seed       protocol.Address
 	Transport  transport.Transport
 	Membership membership.Membership
 }
 
 func NewNode(id, addr, seed string) *Node {
 	return &Node{
-		ID:         id,
-		Addr:       addr,
-		Seed:       seed,
+		ID:         protocol.NodeID(id),
+		Addr:       protocol.Address(addr),
+		Seed:       protocol.Address(seed),
 		Membership: *membership.NewMembership(),
 	}
 }
@@ -38,7 +38,7 @@ func (n *Node) Start() error {
 
 	go n.startGossip()
 
-	if n.Seed != "" {
+	if n.Seed != protocol.Address("") {
 		n.sendHello()
 	}
 

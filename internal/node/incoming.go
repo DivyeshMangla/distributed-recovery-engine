@@ -9,7 +9,7 @@ import (
 
 func (n *Node) handleHello(data []byte) bool {
 	var h protocol.Hello
-	if err := json.Unmarshal(data, &h); err != nil || h.ID == "" {
+	if err := json.Unmarshal(data, &h); err != nil || h.ID == protocol.NodeID("") {
 		return false
 	}
 
@@ -25,7 +25,7 @@ func (n *Node) handleHello(data []byte) bool {
 	return true
 }
 
-func (n *Node) replyHello(addr string) {
+func (n *Node) replyHello(addr protocol.Address) {
 	payload, err := json.Marshal(protocol.Hello{
 		ID:   n.ID,
 		Addr: n.Addr,
