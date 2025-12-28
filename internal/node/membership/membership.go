@@ -1,7 +1,6 @@
 package membership
 
 import (
-	"fmt"
 	"math/rand"
 	"sync"
 	"time"
@@ -24,37 +23,41 @@ func NewMembership() *Membership {
 	}
 }
 
-func (m *Membership) Upsert(id protocol.NodeID, addr protocol.Address, status Status) {
+func (m *Membership) Upsert(in Member) {
 	m.mu.Lock()
 	defer m.mu.Unlock()
 
-	if member, ok := m.members[id]; ok {
-		member.Addr = addr
-
-		// Direct communication always wins
-		if status == Alive {
-			member.Status = Alive
-			member.LastSeen = time.Now()
-			m.dirty = true
-			return
-		}
-
-		// Gossip only worsens state
-		if status > member.Status {
-			fmt.Printf("[gossip] updated node=%s from %d to %d\n", id, member.Status, status)
-			member.Status = status
-			m.dirty = true
-		}
+	local, ok := m.members[in.ID]
+	if !ok {
+		m.members[in.ID] = &in
+		m.dirty = true
 		return
 	}
 
-	m.members[id] = &Member{
-		ID:       id,
-		Addr:     addr,
-		Status:   status,
-		LastSeen: time.Now(),
+	// Address always updates
+	local.Addr = in.Addr
+
+	// Direct Alive always wins
+	if in.Status == Alive && in.LastSeen.After(local.LastSeen) {
+		local.Status = Alive
+		local.LastSeen = in.LastSeen
+		m.dirty = true
+		return
 	}
-	m.dirty = true
+
+	// Gossip: accept only if strictly newer
+	if in.LastSeen.After(local.LastSeen) {
+		local.Status = in.Status
+		local.LastSeen = in.LastSeen
+		m.dirty = true
+		return
+	}
+
+	// Same timestamp, worse status wins
+	if in.LastSeen.Equal(local.LastSeen) && in.Status > local.Status {
+		local.Status = in.Status
+		m.dirty = true
+	}
 }
 
 func (m *Membership) Snapshot() []Member {
@@ -85,7 +88,7 @@ func (m *Membership) PickRandomPeer(selfID protocol.NodeID) *Member {
 
 	peers := make([]*Member, 0, len(m.members))
 	for id, member := range m.members {
-		if id == selfID || member.Status != Alive {
+		if id == selfID || member.Status == Dead {
 			continue
 		}
 		peers = append(peers, member)
@@ -124,5 +127,14 @@ func (m *Membership) MarkAlive(id protocol.NodeID) {
 		member.Status = Alive
 		member.LastSeen = time.Now()
 		m.dirty = true
+	}
+}
+
+func FromGossip(g protocol.GossipMember) Member {
+	return Member{
+		ID:       g.ID,
+		Addr:     g.Addr,
+		Status:   Status(g.Status),
+		LastSeen: g.LastSeen,
 	}
 }

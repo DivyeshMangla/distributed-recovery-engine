@@ -1,6 +1,8 @@
 package transport
 
 import (
+	"encoding/binary"
+	"io"
 	"net"
 
 	"github.com/divyeshmangla/distributed-recovery-engine/internal/protocol"
@@ -24,9 +26,7 @@ func (t *TCPTransport) Listen(addr protocol.Address) (<-chan []byte, error) {
 	}
 
 	t.ln = ln
-
 	go t.acceptLoop()
-
 	return t.in, nil
 }
 
@@ -36,21 +36,19 @@ func (t *TCPTransport) acceptLoop() {
 		if err != nil {
 			return
 		}
-
-		go t.handleConnection(conn)
+		go t.handleConn(conn)
 	}
 }
 
-func (t *TCPTransport) handleConnection(conn net.Conn) {
-	defer closeQuietly(conn)
+func (t *TCPTransport) handleConn(conn net.Conn) {
+	defer conn.Close()
 
-	buf := make([]byte, 1024)
-	n, err := conn.Read(buf)
+	msg, err := readFrame(conn)
 	if err != nil {
 		return
 	}
 
-	t.in <- buf[:n]
+	t.in <- msg
 }
 
 func (t *TCPTransport) Dial(addr protocol.Address, msg []byte) error {
@@ -58,23 +56,34 @@ func (t *TCPTransport) Dial(addr protocol.Address, msg []byte) error {
 	if err != nil {
 		return err
 	}
+	defer conn.Close()
 
-	defer closeQuietly(conn)
-
-	_, err = conn.Write(msg)
-
-	return err
+	return writeFrame(conn, msg)
 }
 
 func (t *TCPTransport) Close() error {
 	if t.ln != nil {
 		return t.ln.Close()
 	}
-
 	close(t.in)
 	return nil
 }
 
-func closeQuietly(c net.Conn) {
-	_ = c.Close()
+func readFrame(r io.Reader) ([]byte, error) {
+	var size uint32
+	if err := binary.Read(r, binary.BigEndian, &size); err != nil {
+		return nil, err
+	}
+
+	buf := make([]byte, size)
+	_, err := io.ReadFull(r, buf)
+	return buf, err
+}
+
+func writeFrame(w io.Writer, msg []byte) error {
+	if err := binary.Write(w, binary.BigEndian, uint32(len(msg))); err != nil {
+		return err
+	}
+	_, err := w.Write(msg)
+	return err
 }

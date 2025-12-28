@@ -9,6 +9,7 @@ import (
 	"os"
 	"os/signal"
 	"syscall"
+	"time"
 )
 
 type Node struct {
@@ -46,7 +47,12 @@ func (n *Node) Start() error {
 		n.sendHello()
 	}
 
-	n.Membership.Upsert(n.ID, n.Addr, membership.Alive) // need to register self
+	n.Membership.Upsert(membership.Member{
+		ID:       n.ID,
+		Addr:     n.Addr,
+		Status:   membership.Alive,
+		LastSeen: time.Now(),
+	})
 
 	fmt.Printf(
 		"node id: %s, listen address: %s, seed node address: %s\n",

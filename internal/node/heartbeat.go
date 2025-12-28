@@ -2,6 +2,7 @@ package node
 
 import (
 	"encoding/json"
+	"fmt"
 	"github.com/divyeshmangla/distributed-recovery-engine/internal/protocol"
 	"time"
 )
@@ -34,4 +35,5 @@ func (n *Node) sendHeartbeat() {
 	_ = n.Transport.Dial(peer.Addr, payload)
 
 	n.Membership.MarkAlive(n.ID) // don't sus yourself out
+	fmt.Println("sent heartbeat to", peer.ID)
 }

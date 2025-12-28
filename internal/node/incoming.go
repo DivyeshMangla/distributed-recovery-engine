@@ -11,14 +11,25 @@ import (
 
 func (n *Node) handleHello(data []byte) bool {
 	var h protocol.Hello
-	if err := json.Unmarshal(data, &h); err != nil || h.ID == ("") {
+	if err := json.Unmarshal(data, &h); err != nil || h.ID == "" {
 		return false
 	}
 
 	isNew := !n.Membership.Exists(h.ID)
-	n.Membership.Upsert(h.ID, h.Addr, membership.Alive)
 
-	fmt.Printf("received hello from %s (%s), members=%d\n", h.ID, h.Addr, len(n.Membership.Snapshot()))
+	n.Membership.Upsert(membership.Member{
+		ID:       h.ID,
+		Addr:     h.Addr,
+		Status:   membership.Alive,
+		LastSeen: time.Now(), // direct observation
+	})
+
+	fmt.Printf(
+		"received hello from %s (%s), members=%d\n",
+		h.ID,
+		h.Addr,
+		len(n.Membership.Snapshot()),
+	)
 
 	if isNew {
 		n.replyHello(h.Addr)
@@ -49,7 +60,7 @@ func (n *Node) handleGossip(data []byte) bool {
 	oldSize := len(n.Membership.Snapshot())
 
 	for _, member := range g.Members {
-		n.Membership.Upsert(member.ID, member.Addr, membership.Status(member.Status))
+		n.Membership.Upsert(membership.FromGossip(member))
 	}
 
 	newSize := len(n.Membership.Snapshot())
@@ -58,6 +69,7 @@ func (n *Node) handleGossip(data []byte) bool {
 		fmt.Printf("merged gossip, members=%d\n", newSize)
 	}
 
+	fmt.Println("received gossip:", n.Membership.Snapshot())
 	return true
 }
 

@@ -2,6 +2,7 @@ package node
 
 import (
 	"encoding/json"
+	"fmt"
 	"time"
 
 	"github.com/divyeshmangla/distributed-recovery-engine/internal/protocol"
@@ -28,6 +29,8 @@ func (n *Node) gossipToPeer() {
 	}
 
 	_ = n.Transport.Dial(peer.Addr, payload)
+	fmt.Println("sent gossip to", peer.ID)
+	fmt.Println(n.Membership.Snapshot())
 }
 
 func (n *Node) buildGossipPayload() ([]byte, error) {
@@ -36,9 +39,10 @@ func (n *Node) buildGossipPayload() ([]byte, error) {
 	members := make([]protocol.GossipMember, 0, len(snapshot))
 	for _, m := range snapshot {
 		members = append(members, protocol.GossipMember{
-			ID:     m.ID,
-			Addr:   m.Addr,
-			Status: int(m.Status),
+			ID:       m.ID,
+			Addr:     m.Addr,
+			Status:   int(m.Status),
+			LastSeen: m.LastSeen,
 		})
 	}
 
