@@ -35,14 +35,15 @@ func (n *Node) Start() error {
 	}
 
 	go n.handleIncoming(ch)
-
 	go n.startGossip()
-
 	go n.startHeartbeat()
+	go n.startFailureMonitor()
 
 	if n.Seed != ("") {
 		n.sendHello()
 	}
+
+	n.Membership.Upsert(n.ID, n.Addr) // need to register self
 
 	fmt.Printf(
 		"node id: %s, listen address: %s, seed node address: %s\n",
@@ -63,6 +64,10 @@ func (n *Node) handleIncoming(ch <-chan []byte) {
 		}
 
 		if n.handleHeartbeat(data) {
+			continue
+		}
+
+		if n.handleHeartbeatAck(data) {
 			continue
 		}
 	}

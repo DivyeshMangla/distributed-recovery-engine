@@ -96,3 +96,13 @@ func (m *Membership) GetAddr(id protocol.NodeID) protocol.Address {
 	}
 	return ""
 }
+
+func (m *Membership) MarkAlive(id protocol.NodeID) {
+	m.mu.Lock()
+	defer m.mu.Unlock()
+
+	if member, ok := m.members[id]; ok {
+		member.Status = Alive
+		member.LastSeen = time.Now()
+	}
+}

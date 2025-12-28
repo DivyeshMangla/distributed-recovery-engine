@@ -3,6 +3,7 @@ package node
 import (
 	"encoding/json"
 	"fmt"
+	"time"
 
 	"github.com/divyeshmangla/distributed-recovery-engine/internal/protocol"
 )
@@ -65,7 +66,30 @@ func (n *Node) handleHeartbeat(data []byte) bool {
 		return false
 	}
 
-	n.Membership.Upsert(hb.From, n.Membership.GetAddr(hb.From))
+	n.Membership.MarkAlive(hb.From)
+	n.replyHeartbeat(n.Membership.GetAddr(hb.From))
 
+	return true
+}
+
+func (n *Node) replyHeartbeat(addr protocol.Address) {
+	ack := protocol.HeartbeatAck{
+		From:      n.ID,
+		Timestamp: time.Now(),
+	}
+
+	payload, _ := json.Marshal(ack)
+	if addr != "" {
+		_ = n.Transport.Dial(addr, payload)
+	}
+}
+
+func (n *Node) handleHeartbeatAck(data []byte) bool {
+	var ack protocol.HeartbeatAck
+	if err := json.Unmarshal(data, &ack); err != nil || ack.From == "" {
+		return false
+	}
+
+	n.Membership.MarkAlive(ack.From)
 	return true
 }
