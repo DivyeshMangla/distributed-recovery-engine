@@ -2,10 +2,10 @@ package node
 
 import (
 	"encoding/json"
-	"fmt"
-	"github.com/divyeshmangla/distributed-recovery-engine/internal/node/membership"
+	"log/slog"
 	"time"
 
+	"github.com/divyeshmangla/distributed-recovery-engine/internal/node/membership"
 	"github.com/divyeshmangla/distributed-recovery-engine/internal/protocol"
 )
 
@@ -24,12 +24,7 @@ func (n *Node) handleHello(data []byte) bool {
 		LastSeen: time.Now(), // direct observation
 	})
 
-	fmt.Printf(
-		"received hello from %s (%s), members=%d\n",
-		h.ID,
-		h.Addr,
-		len(n.Membership.Snapshot()),
-	)
+	slog.Info("received hello", "from", h.ID, "addr", h.Addr, "isNew", isNew)
 
 	if isNew {
 		n.replyHello(h.Addr)
@@ -57,19 +52,11 @@ func (n *Node) handleGossip(data []byte) bool {
 		return false
 	}
 
-	oldSize := len(n.Membership.Snapshot())
-
 	for _, member := range g.Members {
 		n.Membership.Upsert(membership.FromGossip(member))
 	}
 
-	newSize := len(n.Membership.Snapshot())
-
-	if newSize > oldSize {
-		fmt.Printf("merged gossip, members=%d\n", newSize)
-	}
-
-	fmt.Println("received gossip:", n.Membership.Snapshot())
+	slog.Debug("processed gossip", "memberCount", len(g.Members))
 	return true
 }
 

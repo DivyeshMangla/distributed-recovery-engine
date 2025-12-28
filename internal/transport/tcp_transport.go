@@ -15,7 +15,7 @@ type TCPTransport struct {
 
 func NewTCPTransport() *TCPTransport {
 	return &TCPTransport{
-		in: make(chan []byte),
+		in: make(chan []byte, 100), // Buffered to prevent blocking on slow handlers
 	}
 }
 

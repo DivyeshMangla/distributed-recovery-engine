@@ -27,18 +27,27 @@ func (m *Membership) Upsert(in Member) {
 	m.mu.Lock()
 	defer m.mu.Unlock()
 
+	now := time.Now()
 	local, ok := m.members[in.ID]
 	if !ok {
+		in.UpdatedAt = now
 		m.members[in.ID] = &in
 		m.dirty = true
 		return
 	}
 
 	// Address always updates
-	local.Addr = in.Addr
+	if local.Addr != in.Addr {
+		local.Addr = in.Addr
+		local.UpdatedAt = now
+		m.dirty = true
+	}
 
 	// Direct Alive always wins
 	if in.Status == Alive && in.LastSeen.After(local.LastSeen) {
+		if local.Status != Alive {
+			local.UpdatedAt = now
+		}
 		local.Status = Alive
 		local.LastSeen = in.LastSeen
 		m.dirty = true
@@ -47,6 +56,9 @@ func (m *Membership) Upsert(in Member) {
 
 	// Gossip: accept only if strictly newer
 	if in.LastSeen.After(local.LastSeen) {
+		if local.Status != in.Status {
+			local.UpdatedAt = now
+		}
 		local.Status = in.Status
 		local.LastSeen = in.LastSeen
 		m.dirty = true
@@ -56,6 +68,7 @@ func (m *Membership) Upsert(in Member) {
 	// Same timestamp, worse status wins
 	if in.LastSeen.Equal(local.LastSeen) && in.Status > local.Status {
 		local.Status = in.Status
+		local.UpdatedAt = now
 		m.dirty = true
 	}
 }
@@ -126,7 +139,7 @@ func (m *Membership) MarkAlive(id protocol.NodeID) {
 	if member, ok := m.members[id]; ok {
 		member.Status = Alive
 		member.LastSeen = time.Now()
-		m.dirty = true
+		// Do NOT mark dirty — heartbeats are high-frequency noise
 	}
 }
 
@@ -137,4 +150,60 @@ func FromGossip(g protocol.GossipMember) Member {
 		Status:   Status(g.Status),
 		LastSeen: g.LastSeen,
 	}
+}
+
+// SelectGossipTargets returns a hybrid selection for delta gossip:
+// - Always includes self
+// - Members updated within recentWindow
+// - Random sample of alive peers to fill remaining slots
+// Returns at most maxCount members.
+func (m *Membership) SelectGossipTargets(selfID protocol.NodeID, maxCount int, recentWindow time.Duration) []Member {
+	m.mu.Lock()
+	defer m.mu.Unlock()
+
+	now := time.Now()
+	result := make([]Member, 0, maxCount)
+	included := make(map[protocol.NodeID]bool)
+
+	// 1. Always include self
+	if self, ok := m.members[selfID]; ok {
+		result = append(result, *self)
+		included[selfID] = true
+	}
+
+	// 2. Add recently changed members
+	for id, member := range m.members {
+		if len(result) >= maxCount {
+			break
+		}
+		if included[id] || member.Status == Dead {
+			continue
+		}
+		if now.Sub(member.UpdatedAt) <= recentWindow {
+			result = append(result, *member)
+			included[id] = true
+		}
+	}
+
+	// 3. Fill remaining slots with random alive peers
+	if len(result) < maxCount {
+		var candidates []*Member
+		for id, member := range m.members {
+			if !included[id] && member.Status != Dead {
+				candidates = append(candidates, member)
+			}
+		}
+		// Shuffle and pick
+		rand.Shuffle(len(candidates), func(i, j int) {
+			candidates[i], candidates[j] = candidates[j], candidates[i]
+		})
+		for _, member := range candidates {
+			if len(result) >= maxCount {
+				break
+			}
+			result = append(result, *member)
+		}
+	}
+
+	return result
 }

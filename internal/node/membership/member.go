@@ -7,8 +7,9 @@ import (
 )
 
 type Member struct {
-	ID       protocol.NodeID
-	Addr     protocol.Address
-	Status   Status
-	LastSeen time.Time
+	ID        protocol.NodeID
+	Addr      protocol.Address
+	Status    Status
+	LastSeen  time.Time
+	UpdatedAt time.Time // Tracks when membership info changed (for delta gossip)
 }

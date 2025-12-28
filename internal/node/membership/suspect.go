@@ -1,7 +1,7 @@
 package membership
 
 import (
-	"fmt"
+	"log/slog"
 	"time"
 )
 
@@ -18,12 +18,11 @@ func (m *Membership) MarkSuspect(timeout time.Duration) {
 
 		if now.Sub(member.LastSeen) > timeout {
 			member.Status = Suspect
-			fmt.Printf(
-				"[suspect] node=%s addr=%s last_seen=%s silence=%s\n",
-				member.ID,
-				member.Addr,
-				member.LastSeen.Format(time.RFC3339),
-				now.Sub(member.LastSeen).Truncate(time.Millisecond),
+			slog.Info("node suspected",
+				"node", member.ID,
+				"addr", member.Addr,
+				"lastSeen", member.LastSeen.Format(time.RFC3339),
+				"silence", now.Sub(member.LastSeen).Truncate(time.Millisecond),
 			)
 		}
 	}
@@ -42,12 +41,11 @@ func (m *Membership) MarkDead(deadTimeout time.Duration) {
 
 		if now.Sub(member.LastSeen) > deadTimeout {
 			member.Status = Dead
-			fmt.Printf(
-				"[dead] node=%s addr=%s last_seen=%s silence=%s\n",
-				member.ID,
-				member.Addr,
-				member.LastSeen.Format(time.RFC3339),
-				now.Sub(member.LastSeen).Truncate(time.Millisecond),
+			slog.Info("node declared dead",
+				"node", member.ID,
+				"addr", member.Addr,
+				"lastSeen", member.LastSeen.Format(time.RFC3339),
+				"silence", now.Sub(member.LastSeen).Truncate(time.Millisecond),
 			)
 		}
 	}

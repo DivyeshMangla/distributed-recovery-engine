@@ -2,14 +2,20 @@ package node
 
 import (
 	"encoding/json"
-	"fmt"
+	"log/slog"
 	"time"
 
 	"github.com/divyeshmangla/distributed-recovery-engine/internal/protocol"
 )
 
+const (
+	gossipInterval     = 2 * time.Second
+	gossipMaxMembers   = 5
+	gossipRecentWindow = 30 * time.Second
+)
+
 func (n *Node) startGossip() {
-	ticker := time.NewTicker(2 * time.Second)
+	ticker := time.NewTicker(gossipInterval)
 	defer ticker.Stop()
 
 	for range ticker.C {
@@ -29,15 +35,15 @@ func (n *Node) gossipToPeer() {
 	}
 
 	_ = n.Transport.Dial(peer.Addr, payload)
-	fmt.Println("sent gossip to", peer.ID)
-	fmt.Println(n.Membership.Snapshot())
+	slog.Debug("sent gossip", "to", peer.ID, "payloadSize", len(payload))
 }
 
 func (n *Node) buildGossipPayload() ([]byte, error) {
-	snapshot := n.Membership.Snapshot()
+	// Hybrid delta gossip: self + recently changed + random sample, max 5
+	targets := n.Membership.SelectGossipTargets(n.ID, gossipMaxMembers, gossipRecentWindow)
 
-	members := make([]protocol.GossipMember, 0, len(snapshot))
-	for _, m := range snapshot {
+	members := make([]protocol.GossipMember, 0, len(targets))
+	for _, m := range targets {
 		members = append(members, protocol.GossipMember{
 			ID:       m.ID,
 			Addr:     m.Addr,
