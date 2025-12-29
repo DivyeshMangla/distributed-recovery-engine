@@ -1,12 +1,24 @@
-FROM golang:1.24-alpine
+# buildtime
+FROM golang:1.24 AS build
 
 WORKDIR /app
 
+# COPY go.mod go.sum ./  when the project eventually has dependencies
+COPY go.mod ./
+RUN go mod download
+
 COPY . .
 
-RUN go mod download
-RUN go build -o dre ./cmd/dre
+RUN CGO_ENABLED=0 GOOS=linux GOARCH=amd64 \
+    go build -trimpath -ldflags="-s -w" -o dre ./cmd/dre
+
+# runtime
+FROM scratch
+
+WORKDIR /app
+
+COPY --from=build /app/dre /app/dre
 
 EXPOSE 8080
 
-ENTRYPOINT ["./dre"]
+ENTRYPOINT ["/app/dre"]
