@@ -6,4 +6,5 @@ const (
 	Alive Status = iota
 	Suspect
 	Dead
+	QUARANTINED
 )
