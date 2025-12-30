@@ -14,9 +14,11 @@ import (
 )
 
 type Node struct {
-	ID         protocol.NodeID
-	Addr       protocol.Address
-	Seed       protocol.Address
+	ID     protocol.NodeID
+	LifeID protocol.LifeID
+	Addr   protocol.Address
+	Seed   protocol.Address
+
 	Transport  transport.Transport
 	Membership membership.Membership
 }
@@ -24,6 +26,7 @@ type Node struct {
 func NewNode(id, addr, seed string) *Node {
 	return &Node{
 		ID:         protocol.NodeID(id),
+		LifeID:     0, // initial life starts at 0th
 		Addr:       protocol.Address(addr),
 		Seed:       protocol.Address(seed),
 		Membership: *membership.NewMembership(),
